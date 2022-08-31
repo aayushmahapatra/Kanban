@@ -3,7 +3,7 @@
 A minimal kanban app.
 
 > Language: Python \
-> Template: Jinja2 \
+> Template: Flask & Jinja2 \
 > Framework: Bootstrap5 \
 > Database: SQLite
 

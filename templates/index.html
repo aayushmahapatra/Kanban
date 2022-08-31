@@ -1,0 +1,64 @@
+{% extends 'base.html' %} 
+{% block title %} Login {% endblock %} 
+{% block body %}
+<main>
+  <h1 class="text-center mb-2 fw-bold">Welcome to Kanban</h1>
+
+  {% with messages = get_flashed_messages() %} 
+  {% if messages %}
+  {% for message in messages %}
+  <div class="alert alert-primary alert-dismissable w-50 mx-auto" role="alert">
+    {{message}} 
+    <button
+      type="button"
+      class="btn-close float-end"
+      data-bs-dismiss="alert"
+      aria-label="Close"
+    >
+    </button>
+  </div>
+  {% endfor %} 
+  {% endif %} 
+  {% endwith %}
+
+  <!-- Login Form -->
+  <section>
+  <form class="d-flex flex-column justify-content-center align-items-center mx-auto mt-5 card p-3 glassmorph" id="login" action="{{url_for('login')}}" method="POST" style="width: 300px;">
+    <div class="mb-3">
+      <label for="username" class="form-label">Username</label>
+      <input type="text" class="form-control" id="username" name="username" placeholder="username">
+    </div>
+    <div class="mb-3">
+      <label for="password" class="form-label">Password</label>
+      <input type="password" class="form-control" id="password" name="password" placeholder="password">
+    </div>
+    <button type="submit" class="btn btn-primary mb-1" style="width: 230px">Login</button>
+    <div class="form-text" style="width: 230px; cursor: pointer" id="signup-btn">
+      Don't have an account? Signup.
+    </div>
+  </form>
+  
+  <!-- Signup Form -->
+  <form class="d-none flex-column justify-content-center align-items-center mx-auto mt-5 card p-3 glassmorph" style="width: 300px" id="signup" action="{{url_for('signup')}}" method="POST">
+    <div class="mb-3">
+      <label for="username" class="form-label">Username</label>
+      <input type="text" class="form-control" id="username" name="username" placeholder="username">
+    </div>
+    <div>
+      <label for="password" class="form-label">Password</label>
+      <input type="password" class="form-control" id="password" aria-describedby="passwordHelp" name="password" placeholder="password">
+    </div>
+    <div id="passwordHelp" class="form-text mb-3" style="width: 230px">
+      Your password must be atleast 8 characters long and contain letters & numbers.
+    </div>
+    <div class="mb-3">
+      <label for="confirm-password" class="form-label">Confirm Password</label>
+      <input type="password" class="form-control" id="confirm-password" name="confirm-password" placeholder="confirm password">
+    </div>
+    <button type="submit" class="btn btn-primary mb-1" style="width: 230px">Signup</button>
+    <div class="form-text" style="width: 230px; cursor: pointer" id="login-btn">
+      Already have an account? Login.
+    </div>
+  </form>
+</main>
+{% endblock %}

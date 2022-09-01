@@ -9,7 +9,7 @@
       <button type="button" class="btn btn-light" data-bs-toggle="modal" data-bs-target="#addlist">
         Add List
       </button>
-      <a href="{{url_for('summary', uid=userid)}}" class="btn btn-light">
+      <a href="{{url_for('summary')}}" class="btn btn-light">
         Summary
       </a>
       <a href="{{url_for('logout')}}" class="btn btn-light">
@@ -49,7 +49,7 @@
             </span>
           </h5>
           <p class="card-text">{{card[3]}}</p>
-          <form action="{{url_for('movecard', id=card[0], uid=userid)}}" method="POST">
+          <form action="{{url_for('movecard', id=card[0])}}" method="POST">
             <select class="form-select form-select-sm" aria-label=".form-select-sm example" name="lid" onchange="javascript:this.form.submit()">
               {% for list in lists %}
               {% if list[0] == card[1] %}
@@ -64,11 +64,11 @@
         <div class="card-footer d-flex justify-content-between align-items-center">
           <span>{{card[4]}}</span>
           {% if card[5] == 0 %}
-          <a href="{{url_for('completed', id=card[0], value=1, uid=userid)}}" class="btn btn-outline-secondary btn-sm">
+          <a href="{{url_for('completed', id=card[0], value=1)}}" class="btn btn-outline-secondary btn-sm">
             Mark Completed
           </a>
           {% else %}
-          <a href="{{url_for('completed', id=card[0], value=0, uid=userid)}}" class="btn btn-outline-success btn-sm float-end">
+          <a href="{{url_for('completed', id=card[0], value=0)}}" class="btn btn-outline-success btn-sm float-end">
             Completed
           </a>
           {% endif %}
@@ -78,7 +78,7 @@
       <!-- Edit Card Modal -->
       <section class="modal fade" id="editcard{{card[0]}}" tabindex="-1" aria-labelledby="editcardLabel" aria-hidden="true">
         <section class="modal-dialog modal-dialog-centered">
-          <form class="modal-content" action="{{url_for('editcard', id=card[0], uid=userid)}}" method="POST">
+          <form class="modal-content" action="{{url_for('editcard', id=card[0])}}" method="POST">
             <div class="modal-header">
               <h5 class="modal-title" id="editcardLabel">Edit Card</h5>
               <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -124,7 +124,7 @@
             </div>
             <div class="modal-footer">
               <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-              <a href="{{url_for('deletecard', id=card[0], uid=userid)}}" class="btn btn-danger">
+              <a href="{{url_for('deletecard', id=card[0])}}" class="btn btn-danger">
                 Delete
               </a>
             </div>
@@ -139,7 +139,7 @@
   <!-- Add Card Modal -->
   <section class="modal fade" id="addcard{{list[0]}}" tabindex="-1" aria-labelledby="addcardLabel" aria-hidden="true">
     <section class="modal-dialog modal-dialog-centered">
-      <form class="modal-content" action="{{url_for('addcard', lid=list[0], uid=userid)}}" method="POST">
+      <form class="modal-content" action="{{url_for('addcard', lid=list[0])}}" method="POST">
         <div class="modal-header">
           <h5 class="modal-title" id="addcardLabel">Add Card</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -175,7 +175,7 @@
   <!-- Edit List Modal -->
   <section class="modal fade" id="editlist{{list[0]}}" tabindex="-1" aria-labelledby="editlistLabel" aria-hidden="true">
     <section class="modal-dialog modal-dialog-centered">
-      <form class="modal-content" action="{{url_for('editlist', id=list[0], uid=userid)}}" method="POST">
+      <form class="modal-content" action="{{url_for('editlist', id=list[0])}}" method="POST">
         <div class="modal-header">
           <h5 class="modal-title" id="editlistLabel">Edit List</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -208,7 +208,7 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-          <a href="{{url_for('deletelist', id=list[0], uid=userid)}}" class="btn btn-danger">
+          <a href="{{url_for('deletelist', id=list[0])}}" class="btn btn-danger">
             Delete
           </a>
         </div>

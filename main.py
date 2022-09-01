@@ -1,4 +1,5 @@
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import Flask, render_template, request, redirect, url_for, flash, session
+from flask_session import Session
 import sqlite3
 from datetime import datetime
 import re
@@ -13,7 +14,8 @@ PASSWORD TEXT NOT NULL)')
 cursor.execute('CREATE TABLE IF NOT EXISTS lists (\
 ID INTEGER PRIMARY KEY AUTOINCREMENT, \
 USERID INTEGER NOT NULL, \
-TITLE TEXT NOT NULL)')
+TITLE TEXT NOT NULL, \
+FOREIGN KEY(USERID) REFERENCES users(ID))')
 cursor.execute('CREATE TABLE IF NOT EXISTS cards (\
 ID INTEGER PRIMARY KEY AUTOINCREMENT, \
 LISTID INTEGER NOT NULL, \
@@ -23,12 +25,17 @@ DEADLINE DATETIME NOT NULL, \
 COMPLETED INTEGER NOT NULL, \
 CREATED_AT DATETIME NOT NULL, \
 LAST_MODIFIED DATETIME NOT NULL, \
-COMPLETED_AT DATETIME)')
+COMPLETED_AT DATETIME, \
+FOREIGN KEY(LISTID) REFERENCES lists(ID))')
 db.commit() # save changes
 db.close()
 
 app = Flask(__name__)
 app.secret_key = "Secret_Key"
+app.config["SESSION_PERMANENT"] = False
+app.config["SESSION_TYPE"] = "filesystem"
+app.config.update(SESSION_COOKIE_SAMESITE="None", SESSION_COOKIE_SECURE=True)
+Session(app)
 
 # function for using db in flask
 def sql(cmd, vals=None):
@@ -76,25 +83,30 @@ def login():
       request.form['password'],
     ))
     if userid:
-      return redirect(url_for('dashboard', uid=userid[0][0]))
+      session['userid'] = userid[0][0]
+      return redirect(url_for('dashboard'))
     else:
       flash("Username or Password is Incorrect")
       return redirect(url_for('index'))
 
 @app.route('/logout', methods = ['GET'])
 def logout():
+  session["userid"] = None
   flash("Logged Out Successfully")
   return redirect(url_for('index'))
 
-@app.route('/dashboard/<uid>')
-def dashboard(uid):
+@app.route('/dashboard')
+def dashboard():
+  if 'userid' not in session:
+    return redirect(url_for('index'))
+  userid = session['userid']
   conn = sqlite3.connect('kanban.db')
   cur = conn.cursor()
-  all_lists = cur.execute('SELECT * FROM lists WHERE USERID=?', uid).fetchall()
+  all_lists = cur.execute('SELECT * FROM lists WHERE USERID=?', str(userid)).fetchall()
   all_cards = cur.execute('SELECT * FROM cards').fetchall()
   conn.commit()
   conn.close()
-  return render_template("dashboard.html", lists=all_lists, cards=all_cards, userid=uid)
+  return render_template("dashboard.html", lists=all_lists, cards=all_cards, userid=userid)
 
 @app.route('/addlist/<uid>', methods = ['POST'])
 def addlist(uid):
@@ -103,29 +115,26 @@ def addlist(uid):
       uid,
       request.form['title'],
     ))
-    return redirect(url_for('dashboard', uid=uid))
+    return redirect(url_for('dashboard'))
 
 @app.route('/editlist/<id>', methods = ['GET', 'POST'])
 def editlist(id):
-  uid = request.args.get('uid', 0)
   if request.method == 'POST':
     sql('UPDATE lists SET TITLE=? WHERE ID=?', (
       request.form['title'],
       id,
     ))
-    return redirect(url_for('dashboard', uid=uid))
+    return redirect(url_for('dashboard'))
 
 @app.route('/deletelist/<id>', methods = ['GET'])
 def deletelist(id):
-  uid = request.args.get('uid', 0)
   sql('DELETE FROM lists WHERE ID=?', (
     id,
   ))
-  return redirect(url_for('dashboard', uid=uid))
+  return redirect(url_for('dashboard'))
 
 @app.route('/addcard/<lid>', methods = ['POST'])
 def addcard(lid):
-  uid = request.args.get('uid', 0)
   if request.method == 'POST':
     sql('INSERT INTO cards (LISTID, TITLE, CONTENT, DEADLINE, COMPLETED, CREATED_AT, LAST_MODIFIED) VALUES (?, ?, ?, ?, ?, ?, ?)', (
       lid,
@@ -136,11 +145,10 @@ def addcard(lid):
       datetime.now(),
       datetime.now(),
     ))
-    return redirect(url_for('dashboard', uid=uid))
+    return redirect(url_for('dashboard'))
 
 @app.route('/editcard/<id>', methods = ['GET', 'POST'])
 def editcard(id):
-  uid = request.args.get('uid', 0)
   if request.method == 'POST':
     sql('UPDATE cards SET TITLE=?, CONTENT=?, DEADLINE=? LAST_MODIFIED=? WHERE ID=?', (
       request.form['title'],
@@ -149,24 +157,22 @@ def editcard(id):
       datetime.now(),
       id,
     ))
-    return redirect(url_for('dashboard', uid=uid))
+    return redirect(url_for('dashboard'))
 
 @app.route('/movecard/<id>', methods = ['GET', 'POST'])
 def movecard(id):
-  uid = request.args.get('uid', 0)
   if request.method == 'POST':
     sql('UPDATE cards SET LISTID=?, LAST_MODIFIED=? WHERE ID=?', (
       request.form['lid'],
       datetime.now(),
       id,
     ))
-    return redirect(url_for('dashboard', uid=uid))
+    return redirect(url_for('dashboard'))
 
 @app.route('/completed', methods = ['GET'])
 def completed():
   id = request.args.get('id', 0)
   value = request.args.get('value', 0)
-  uid = request.args.get('uid', 0)
   print(value)
   if value == '1':
     sql('UPDATE cards SET COMPLETED=?, LAST_MODIFIED=?, COMPLETED_AT=? WHERE ID=?', (
@@ -181,25 +187,27 @@ def completed():
       datetime.now(),
       id,
     ))
-  return redirect(url_for('dashboard', uid=uid))
+  return redirect(url_for('dashboard'))
 
 @app.route('/deletecard/<id>', methods = ['GET'])
 def deletecard(id):
-  uid = request.args.get('uid', 0)
   sql('DELETE FROM cards WHERE ID=?', (
     id,
   ))
-  return redirect(url_for('dashboard', uid=uid))
+  return redirect(url_for('dashboard'))
 
-@app.route('/summary/<uid>')
-def summary(uid):
+@app.route('/summary')
+def summary():
+  if 'userid' not in session:
+    return redirect(url_for('index'))
+  userid = session['userid']
   conn = sqlite3.connect('kanban.db')
   cur = conn.cursor()
-  all_lists = cur.execute('SELECT * FROM lists WHERE USERID=?', uid).fetchall()
+  all_lists = cur.execute('SELECT * FROM lists WHERE USERID=?', str(userid)).fetchall()
   all_cards = cur.execute('SELECT * FROM cards').fetchall()
   conn.commit()
   conn.close()
-  return render_template("summary.html", lists = all_lists, cards = all_cards, userid=uid)
+  return render_template("summary.html", lists = all_lists, cards = all_cards)
 
 @app.route('/carddata', methods = ['GET'])
 def carddata():
@@ -210,4 +218,5 @@ def carddata():
   conn.close()
   return cards
 
-app.run(host='0.0.0.0', port=81)
+if __name__ == "__main__":
+  app.run(host='0.0.0.0', port=81)

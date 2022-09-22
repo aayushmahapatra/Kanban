@@ -11,11 +11,13 @@ cursor.execute('CREATE TABLE IF NOT EXISTS users (\
 ID INTEGER PRIMARY KEY AUTOINCREMENT, \
 USERNAME TEXT NOT NULL, \
 PASSWORD TEXT NOT NULL)')
+
 cursor.execute('CREATE TABLE IF NOT EXISTS lists (\
 ID INTEGER PRIMARY KEY AUTOINCREMENT, \
 USERID INTEGER NOT NULL, \
 TITLE TEXT NOT NULL, \
 FOREIGN KEY(USERID) REFERENCES users(ID))')
+
 cursor.execute('CREATE TABLE IF NOT EXISTS cards (\
 ID INTEGER PRIMARY KEY AUTOINCREMENT, \
 LISTID INTEGER NOT NULL, \
@@ -27,6 +29,7 @@ CREATED_AT DATETIME NOT NULL, \
 LAST_MODIFIED DATETIME NOT NULL, \
 COMPLETED_AT DATETIME, \
 FOREIGN KEY(LISTID) REFERENCES lists(ID))')
+
 db.commit() # save changes
 db.close()
 
@@ -72,7 +75,6 @@ def signup():
           flash("Account Created Successfully")
         else:
           flash("Passwords do not match. Try Again!")
-          
     return redirect(url_for('index'))
 
 @app.route('/login', methods = ['POST'])
@@ -150,7 +152,7 @@ def addcard(lid):
 @app.route('/editcard/<id>', methods = ['GET', 'POST'])
 def editcard(id):
   if request.method == 'POST':
-    sql('UPDATE cards SET TITLE=?, CONTENT=?, DEADLINE=? LAST_MODIFIED=? WHERE ID=?', (
+    sql('UPDATE cards SET TITLE=?, CONTENT=?, DEADLINE=?, LAST_MODIFIED=? WHERE ID=?', (
       request.form['title'],
       request.form['content'],
       request.form['deadline'],
